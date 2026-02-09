@@ -13,7 +13,6 @@ body {
     align-items: center;
     overflow: hidden;
     perspective: 800px;
-    /* Essential for 3D effect */
 }
 
 #ui {
@@ -22,7 +21,6 @@ body {
     width: 0;
     height: 0;
     transform: rotateX(-15deg) rotateY(15deg);
-    /* Initial tilt */
     animation: rotate 20s linear infinite;
 }
 
@@ -37,24 +35,22 @@ body {
 }
 
 .love_word {
-    position: absolute;
     color: #ea80b0;
     font-size: 1.4rem;
     transform: translateY(-100%) rotateZ(-30deg);
-    /* Initial position */
     text-shadow: 0 0 10px #fff;
     letter-spacing: 2px;
     white-space: nowrap;
     user-select: none;
     pointer-events: none;
     font-weight: 700;
-    /* mix-blend-mode: screen; */
 }
 
 .love_horizontal {
-    /* The screenshot implies an animation delay based on index */
-    /* animation: horizontal 10000ms infinite alternate ease-in-out; */
-    /* We'll handle positioning in JS to form the heart, but we can add a subtle wave here if needed */
+    animation: horizontal 10000ms infinite alternate ease-in-out;
+    animation-delay: calc(var(--i) * -300ms);
+    position: absolute;
+    /* This container holds the word and handles the wave animation */
 }
 
 @keyframes horizontal {
@@ -65,4 +61,12 @@ body {
     100% {
         transform: translateX(10px);
     }
+}
+
+/* Add a container for 3D positioning that doesn't conflict with animation */
+.heart-point {
+    position: absolute;
+    transform-style: preserve-3d;
+    width: 0;
+    height: 0;
 }

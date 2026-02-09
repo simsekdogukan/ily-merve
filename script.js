@@ -11,6 +11,8 @@ function createHeart() {
     const layers = 15; // Number of layers for depth
     const scale = 14; // Scale the heart up
 
+    let index = 0;
+
     for (let layer = 0; layer < layers; layer++) {
         // Calculate z-depth for this layer
         // Spread layers from -140 to 140 on Z axis (20px separation)
@@ -27,18 +29,27 @@ function createHeart() {
             x *= scale;
             y *= scale;
 
-            const span = document.createElement('div');
-            span.classList.add('love_word');
-            span.innerText = text;
+            // Create nested structure:
+            // .heart-point (positions in 3D) -> .love_horizontal (animates wave) -> .love_word (styles & rotates)
 
-            // Position in 3D space with rotation
-            // We combine the calculated position with the -30deg rotation from the design
-            span.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateZ(-30deg)`;
+            const point = document.createElement('div');
+            point.classList.add('heart-point');
+            point.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
 
-            // Optional: Add a slight animation delay based on position for a wave effect
-            // span.style.animationDelay = `${(i * 0.05) + (layer * 0.1)}s`;
+            const horizontal = document.createElement('div');
+            horizontal.classList.add('love_horizontal');
+            // Using random or sequential index for wave offset
+            horizontal.style.setProperty('--i', Math.random() * 5);
 
-            ui.appendChild(span);
+            const word = document.createElement('div');
+            word.classList.add('love_word');
+            word.innerText = text;
+
+            horizontal.appendChild(word);
+            point.appendChild(horizontal);
+            ui.appendChild(point);
+
+            index++;
         }
     }
 }
