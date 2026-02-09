@@ -1,157 +1,46 @@
-const canvas = document.getElementById('heartCanvas');
-const ctx = canvas.getContext('2d');
+const ui = document.getElementById('ui');
+const text = "i love you merviş";
 
-let width, height;
-let particles = [];
-const heartColors = ['#ff4d6d', '#ff758f', '#c9184a', '#ff8fa3', '#fff0f3'];
+function createHeart() {
+    // Heart formula:
+    // x = 16 * sin(t)^3
+    // y = 13 * cos(t) - 5 * cos(2*t) - 2 * cos(3*t) - cos(4*t)
 
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
+    // Create a dense cloud of text
+    const totalPoints = 30; // Points per layer
+    const layers = 15; // Number of layers for depth
+    const scale = 14; // Scale the heart up
 
-window.addEventListener('resize', resize);
-resize();
+    for (let layer = 0; layer < layers; layer++) {
+        // Calculate z-depth for this layer
+        // Spread layers from -140 to 140 on Z axis (20px separation)
+        const z = (layer - layers / 2) * 20;
 
-// Heart formula: (16sin^3t, 13cos t - 5cos 2t - 2cos 3t - cos 4t)
-function getHeartPosition(t) {
-    return {
-        x: 16 * Math.pow(Math.sin(t), 3),
-        y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))
-    };
-}
+        for (let i = 0; i < totalPoints; i++) {
+            const t = (i / totalPoints) * Math.PI * 2;
 
-class Particle {
-    constructor() {
-        this.reset();
-        // Start with random position for initial explosion effect or center
-        this.x = width / 2;
-        this.y = height / 2;
-    }
+            // Parametric equations for heart
+            let x = 16 * Math.pow(Math.sin(t), 3);
+            let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
 
-    reset() {
-        this.t = Math.random() * Math.PI * 2;
-        const pos = getHeartPosition(this.t);
-        // Scale the heart up
-        const scale = Math.min(width, height) / 35; // Responsive scale
-        this.targetX = width / 2 + pos.x * scale;
-        this.targetY = height / 2 + pos.y * scale;
+            // Apply scale
+            x *= scale;
+            y *= scale;
 
-        // Randomize target slightly to give volume to the heart outline
-        this.targetX += (Math.random() - 0.5) * 20;
-        this.targetY += (Math.random() - 0.5) * 20;
+            const span = document.createElement('div');
+            span.classList.add('love_word');
+            span.innerText = text;
 
-        this.speed = Math.random() * 0.05 + 0.02;
-        this.size = Math.random() * 3 + 1;
-        this.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+            // Position in 3D space with rotation
+            // We combine the calculated position with the -30deg rotation from the design
+            span.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateZ(-30deg)`;
 
-        // Current position (starts at center or random)
-        this.x = width / 2;
-        this.y = height / 2;
+            // Optional: Add a slight animation delay based on position for a wave effect
+            // span.style.animationDelay = `${(i * 0.05) + (layer * 0.1)}s`;
 
-        // Velocity
-        this.vx = (Math.random() - 0.5) * 10;
-        this.vy = (Math.random() - 0.5) * 10;
-
-        this.friction = 0.95;
-    }
-
-    update() {
-        // Move towards target
-        const dx = this.targetX - this.x;
-        const dy = this.targetY - this.y;
-
-        this.x += dx * this.speed;
-        this.y += dy * this.speed;
-
-        // Add some jitter/noise
-        this.x += (Math.random() - 0.5) * 2;
-        this.y += (Math.random() - 0.5) * 2;
-    }
-
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+            ui.appendChild(span);
+        }
     }
 }
 
-// Create particles
-function initParticles() {
-    particles = [];
-    const particleCount = Math.min(width, 1000); // Responsive count
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
-}
-
-initParticles();
-
-// Floating particles background
-const floatingParticles = [];
-class FloatingParticle {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 2;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.color = 'rgba(255, 77, 109, 0.3)';
-    }
-
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
-    }
-
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-for (let i = 0; i < 100; i++) {
-    floatingParticles.push(new FloatingParticle());
-}
-
-
-function animate() {
-    // Fade out trail
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.fillRect(0, 0, width, height);
-
-    // Update and draw heart particles
-    particles.forEach(p => {
-        p.update();
-        p.draw();
-    });
-
-    // Update and draw floating background particles
-    floatingParticles.forEach(p => {
-        p.update();
-        p.draw();
-    });
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-
-// Handle click/touch to re-explode/reset
-window.addEventListener('click', () => {
-    particles.forEach(p => {
-        p.reset();
-        p.x = width / 2;
-        p.y = height / 2;
-        p.vx = (Math.random() - 0.5) * 20;
-        p.vy = (Math.random() - 0.5) * 20;
-    });
-});
+createHeart();
